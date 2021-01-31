@@ -1,0 +1,31 @@
+name: Auto Close PR
+description: Auto close PRs that don't match with given patterns.
+author: imba-tjd
+branding:
+  icon: git-pull-request
+  color: black
+
+inputs:
+  pattern:
+    description: The pattern that to be greped.
+    required: true
+  token:
+    required: true
+  message:
+    default: This PR was automatically closed because it did not follow the PR template.
+    required: false
+
+runs:
+  using: composite
+  steps:
+    - run: |
+        cat > body.txt << BODY_END
+        ${{ github.event.pull_request.body }}
+        BODY_END
+
+        if [ ! $(grep '${{ inputs.pattern }}' body.txt) ]; then
+          echo ${{ inputs.token }} | gh auth login --with-token && \
+          gh pr close ${{ github.event.pull_request.number }} -R ${{ github.repository }} && \
+          gh pr review ${{ github.event.pull_request.number }} -R ${{ github.repository }} -c -b '${{ inputs.message }}';
+        fi;
+      shell: bash
