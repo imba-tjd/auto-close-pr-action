@@ -3,7 +3,7 @@ description: Auto close PRs that don't match with given patterns.
 author: imba-tjd
 branding:
   icon: git-pull-request
-  color: black
+  color: red
 
 inputs:
   pattern:
