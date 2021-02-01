@@ -2,7 +2,7 @@
 
 Many newcomers don't know how to use PR and create many invalid ones.
 
-This action closes PRs that DON'T match with given pattern.
+This action closes PRs whose body text DON'T match with given pattern.
 
 NOTE: This action is not widely tested.
 
@@ -16,7 +16,7 @@ NOTE: This action is not widely tested.
 name: Auto Close PR
 on:
   pull_request:
-    types: [opened]  # won't trigger when reopened
+    types: [opened]  # so that not trigger when reopened
 
 jobs:
   auto_close_pr:
@@ -27,4 +27,5 @@ jobs:
       with:
         pattern: ':\s*confirm\s*-->'
         token: ${{ github.token }}
+        # message: <optional>
 ```

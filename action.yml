@@ -1,5 +1,5 @@
 name: Auto Close PR
-description: Auto close PRs that don't match with given patterns.
+description: Close PRs whose body text don't match with given patterns.
 author: imba-tjd
 branding:
   icon: git-pull-request
