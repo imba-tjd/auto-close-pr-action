@@ -28,6 +28,5 @@ jobs:
     - uses: imba-tjd/auto-close-pr-action@master
       with:
         pattern: ':\s*confirm\s*-->'
-        token: ${{ github.token }}
         # message: <optional>
 ```

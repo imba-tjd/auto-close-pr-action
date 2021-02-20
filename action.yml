@@ -10,7 +10,8 @@ inputs:
     description: The pattern that to be greped.
     required: true
   token:
-    required: true
+    default: ${{ github.token }}
+    required: false
   message:
     default: This PR was automatically closed because it did not follow the PR template.
     required: false
