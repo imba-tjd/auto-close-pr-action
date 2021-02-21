@@ -9,9 +9,6 @@ inputs:
   pattern:
     description: The pattern that to be greped.
     required: true
-  token:
-    default: ${{ github.token }}
-    required: false
   message:
     default: This PR was automatically closed because it did not follow the PR template.
     required: false
@@ -27,7 +24,7 @@ runs:
         if [ $(grep '${{ inputs.pattern }}' body.txt) ]; then exit; fi;
 
         set -e;
-        echo ${{ inputs.token }} | gh auth login --with-token;
+        echo ${{ github.token }} | gh auth login --with-token;
         gh pr close ${{ github.event.pull_request.number }} -R ${{ github.repository }};
         if [ '${{ inputs.message }}' ]; then
           gh pr review ${{ github.event.pull_request.number }} -R ${{ github.repository }} -c -b '${{ inputs.message }}';
