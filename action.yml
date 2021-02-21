@@ -24,9 +24,12 @@ runs:
         ${{ github.event.pull_request.body }}
         BODY_END
 
-        if [ ! $(grep '${{ inputs.pattern }}' body.txt) ]; then
-          echo ${{ inputs.token }} | gh auth login --with-token && \
-          gh pr close ${{ github.event.pull_request.number }} -R ${{ github.repository }} && \
+        if [ $(grep '${{ inputs.pattern }}' body.txt) ]; then exit; fi;
+
+        set -e;
+        echo ${{ inputs.token }} | gh auth login --with-token;
+        gh pr close ${{ github.event.pull_request.number }} -R ${{ github.repository }};
+        if [ '${{ inputs.message }}' ]; then
           gh pr review ${{ github.event.pull_request.number }} -R ${{ github.repository }} -c -b '${{ inputs.message }}';
         fi;
       shell: bash
