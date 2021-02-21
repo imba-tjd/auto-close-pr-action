@@ -21,7 +21,7 @@ runs:
         ${{ github.event.pull_request.body }}
         BODY_END
 
-        if [ $(grep '${{ inputs.pattern }}' body.txt) ]; then exit; fi;
+        if [ "$(grep '${{ inputs.pattern }}' body.txt)" ]; then exit; fi;
 
         set -e;
         echo ${{ github.token }} | gh auth login --with-token;
