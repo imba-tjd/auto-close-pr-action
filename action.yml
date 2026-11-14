@@ -1,32 +1,63 @@
+
 name: Auto Close PR
 description: Close PRs whose body text don't match with given patterns.
 author: imba-tjd
+
 branding:
   icon: git-pull-request
   color: red
 
 inputs:
   pattern:
-    description: The pattern that to be greped.
+    description: The GNU grep pattern to match.
     required: true
+
   message:
+    description: The comment left when closing the PR.
     default: This PR was automatically closed because it did not follow the PR template.
     required: false
 
 runs:
   using: composite
   steps:
-    - run: |
-        cat > body.txt << BODY_END
-        ${{ github.event.pull_request.body }}
-        BODY_END
+    - shell: bash
+      env:
+        PR_BODY: ${{ github.event.pull_request.body }}
+        PATTERN: ${{ inputs.pattern }}
+        MESSAGE: ${{ inputs.message }}
+        PR_NUMBER: ${{ github.event.pull_request.number }}
+        REPOSITORY: ${{ github.repository }}
+        GH_TOKEN: ${{ github.token }}
+      run: |
+        set -euo pipefail
 
-        if [ "$(grep '${{ inputs.pattern }}' body.txt)" ]; then exit; fi;
+        if [[ -z "$PATTERN" ]]; then
+          echo "::error::Pattern must not be empty."
+          exit 2
+        fi
 
-        set -e;
-        echo ${{ github.token }} | gh auth login --with-token;
-        gh pr close ${{ github.event.pull_request.number }} -R ${{ github.repository }};
-        if [ '${{ inputs.message }}' ]; then
-          gh pr review ${{ github.event.pull_request.number }} -R ${{ github.repository }} -c -b '${{ inputs.message }}';
-        fi;
-      shell: bash
+        body_file="$(mktemp)"
+        trap 'rm -f "$body_file"' EXIT
+
+        printf '%s' "$PR_BODY" > "$body_file"
+
+        if grep -q -e "$PATTERN" -- "$body_file"; then
+          echo "PR body matches the required pattern."
+          exit 0
+        else
+          grep_status=$?
+        fi
+
+        if (( grep_status != 1 )); then
+          echo "::error::grep failed with status $grep_status"
+          exit "$grep_status"
+        fi
+
+        if [[ -n "$MESSAGE" ]]; then
+          gh pr close "$PR_NUMBER" \
+            --repo "$REPOSITORY" \
+            --comment "$MESSAGE"
+        else
+          gh pr close "$PR_NUMBER" \
+            --repo "$REPOSITORY"
+        fi
